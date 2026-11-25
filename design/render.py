@@ -10,6 +10,7 @@ layout = json.loads((root / "design/layout.json").read_text())
 assets = root / "assets"
 scale = layout["metresPerUnit"]
 rooms = {r["id"]: r for r in layout["rooms"]}
+reception_coffee_table_offset = (-.83, .38)
 colours = {
     "frame":"37332e","cream":"b5a995","white":"f1e9dc","wood":"795437",
     "oak":"a27a55","green":"7f6e56","rust":"a37858","blue":"625849",
@@ -100,7 +101,7 @@ def shelf(x,y,w,depth=.48,levels=4,height=1.9):
             box("Inventory box",bx,y,z+.045,w*.22,depth*.75,.19+.035*(j%2),["cases","cream","sage"][j])
             box("Stock label",bx,y-depth*.38,z+.10,w*.10,.009,.05,"white",0)
 
-def sofa(x,y,w=2.5,colour="green",facing=-1):
+def sofa(x,y,w=2.5,colour="green",*,facing):
     """A positive facing opens toward +Y in the Blender floor plan."""
     box("Sofa base",x,y,.13,w,.83,.31,colour,.085)
     box("Sofa back",x,y-facing*.33,.38,w,.20,.53,colour,.075)
@@ -258,9 +259,10 @@ def axon():
     for k in ("desks","content","control"):
         x,y,w,d=bounds(rooms[k]["rect"])
         n=3 if k=="desks" else (4 if k=="content" else 2)
-        rows=4 if k=="desks" else (2 if k=="content" else 1)
-        for j in range(rows):
-            for i in range(n):furnish_desk(x+(i-(n-1)/2)*1.73,y+(j-(rows-1)/2)*1.86,1.53,direction=1 if j%2==0 else -1)
+        row_offsets={"desks":(-2.45,-1.48,1.48,2.45),"content":(-.93,.93),"control":(0,)}
+        if k=="desks":x+=.29
+        for j,dy in enumerate(row_offsets[k]):
+            for i in range(n):furnish_desk(x+(i-(n-1)/2)*1.73,y+dy,1.53,direction=1 if j%2==0 else -1)
     x,y,w,d=bounds(rooms["owner"]["rect"])
     furnish_desk(x+.65,y+.8,1.90,.83,-1)
     sofa(x-.66,y-1.20,2.05,"rust",facing=1)
@@ -272,7 +274,10 @@ def axon():
         for dy in (-1,1):chair(x+(j-2)*.58,y+dy*1.03,-dy,"rust")
     box("Presentation display",x,y+d/2-.18,.85,2.0,.09,.54,"screen")
     x,y,w,d=bounds(rooms["reception"]["rect"])
-    box("Reception desk",x+1.20,y+.58,0,1.56,.66,.90,"oak",.065);sofa(x-.83,y-.75,2.24,"rust");round_table(x-.83,y+.05,.34,.35,"floor")
+    box("Reception desk",x+1.20,y+.58,0,1.56,.66,.90,"oak",.065)
+    sofa(x-.83,y-.75,2.24,"rust",facing=1)
+    dx,dy=reception_coffee_table_offset
+    round_table(x+dx,y+dy,.34,.35,"floor")
     x,y,w,d=bounds(rooms["pantry"]["rect"])
     box("Pantry counter",x,y-d/2+.40,0,4.72,.69,.91,"oak");box("Stone countertop",x,y-d/2+.4,.91,4.77,.72,.05,"white")
     box("Sink",x+.91,y-d/2+.40,.956,.59,.39,.026,"steel",.05)
@@ -284,7 +289,8 @@ def axon():
         chair(x+dx,y+1.24,-1);chair(x+dx,y-.49,1)
     for k in ("stock","dispatch","prep","green"):
         x,y,w,d=bounds(rooms[k]["rect"])
-        for dx in (-w*.32,w*.32): shelf(x+dx,y+d*.32,w*.28,.47,4)
+        left_shift=.38 if k=="prep" else 0
+        for dx in (-w*.32+left_shift,w*.32): shelf(x+dx,y+d*.32,w*.28,.47,4)
         if k=="dispatch":
             for dy in (-1.7,.4):
                 box("Packing bench top",x,y+dy,.85,2.42,.76,.07,"oak")
@@ -292,7 +298,9 @@ def axon():
                     for ay in (-1,1):box("Packing bench leg",x+ax*1.10,y+dy+ay*.28,.015,.05,.05,.835,"steel")
                 box("Packing mat",x+.52,y+dy,.922,.79,.47,.015,"sage")
                 box("Carton ready to pack",x-.59,y+dy,.92,.43,.35,.24,"cases")
-        if k=="green": furnish_desk(x+.55,y+.23,1.63,direction=-1);sofa(x-1.40,y-.83,1.50,"rust")
+        if k=="green":
+            furnish_desk(x+1.34,y+.23,1.63,direction=1)
+            sofa(x-1.40,y-.83,1.50,"rust",facing=1)
         if k=="prep": box("Product inspection island",x,y-.27,.05,2.64,.83,.85,"oak",.06)
         if k=="stock":
             for dx in (-w*.31,0,w*.31):shelf(x+dx,y-d*.32,w*.26,.46,4)

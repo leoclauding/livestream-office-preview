@@ -110,7 +110,8 @@ box("Art paper mount",x+.72,y-d/2+.159,1.255,.94,.014,.764,"ded4c4",.003)
 for j,(shade,offset,height) in enumerate([("94765e",-.22,.36),("7a8071",.04,.44),("baa184",.22,.29)]):
     box("Art print relief",x+.72+offset,y-d/2+.169,1.39+j*.06,.263,.010,height,shade,.004)
 x,y,w,d=bounds(rooms["reception"]["rect"])
-vase_with_branches(x-.83,y+.05,.406)
+dx,dy=namespace["reception_coffee_table_offset"]
+vase_with_branches(x+dx,y+dy,.406)
 
 edge_segments = [(72,67,1172,67),(72,1267,1172,1267),(72,67,72,1267),(1172,67,1172,1267)]
 for u,v,U,V in edge_segments:
