@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-Hant-HK">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="直播電商辦公室概念設計。探索平面分區、直播室渲染及訪客、製作、備貨動線。">
+<meta name="theme-color" content="#182622">
+<title>Studio / Office · 直播電商辦公室</title>
+<link rel="stylesheet" href="./style.css">
+<script type="module" src="./main.js"></script>
+</head>
+<body>
+<header class="bar shell">
+  <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true"></span>Studio / Office</a>
+  <nav aria-label="頁面導覽"><a href="#plan">平面圖</a><a href="#studios">直播室</a><a href="#workflow">營運動線</a></nav>
+</header>
+<main id="top">
+  <section class="hero shell">
+    <div class="hero-copy">
+      <p class="eyebrow">空間設計提案</p>
+      <h1>直播電商<br>辦公室</h1>
+      <p>由選品、開播到出貨，安排喺同一層。兩間直播室獨立運作，品牌與客戶會面亦有專用空間。</p>
+      <a class="button" href="#plan">探索平面分區</a>
+    </div>
+    <figure class="hero-view">
+      <a href="./assets/axon.jpg" aria-label="開啟全層鳥瞰大圖"><img src="./assets/axon.jpg" alt="全層辦公室鳥瞰渲染，顯示兩間直播間、接待會議、辦公區、茶水間及備貨區" width="1560" height="1230" fetchpriority="high"></a>
+      <figcaption>全層鳥瞰 · 概念渲染</figcaption>
+    </figure>
+  </section>
+
+  <section id="plan" class="plan-section">
+    <div class="shell">
+      <div class="section-head"><div><p class="eyebrow">平面及動線</p><h2>全層分區</h2></div><p>點選平面圖上嘅空間，或者切換訪客、直播製作同備貨路線。</p></div>
+      <div class="plan-layout">
+        <div class="drawing">
+          <div class="drawing-head"><p>辦公室配置</p><span>概念圖 · 尺寸待核實</span></div>
+          <div id="floorplan" aria-label="辦公室互動平面圖"></div>
+          <div class="legend"><span class="guest">訪客及管理</span><span class="work">辦公及員工</span><span class="studio">直播製作</span><span class="logistics">包裝及收納</span><span class="core">原有結構</span></div>
+        </div>
+        <div class="plan-tools">
+          <label for="room-select">空間</label>
+          <select id="room-select"><option>載入中</option></select>
+          <article id="room-info" aria-live="polite">
+            <p class="eyebrow" id="room-en">FLAGSHIP STUDIO</p>
+            <h3 id="room-name">直播室 A</h3>
+            <p id="room-detail"></p>
+            <a id="room-render" href="#studio-a">睇直播室渲染</a>
+          </article>
+          <div class="route-box">
+            <h3>顯示動線</h3>
+            <div id="routes" role="group" aria-label="顯示動線"></div>
+            <p id="route-description" aria-live="polite">平面圖已預留核心兩側通道。點選路線，睇吓唔同團隊點樣使用空間。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="studios" class="studios shell">
+    <div class="section-head"><div><p class="eyebrow">開播場景</p><h2>兩間直播室</h2></div><p>雙機位主直播，同俯拍及近鏡用嘅產品直播可分開排期。</p></div>
+    <div class="render-grid">
+      <figure id="studio-a">
+        <a href="./assets/studio-a.jpg" aria-label="開啟直播室 A 大圖"><img src="./assets/studio-a.jpg" alt="深綠背景主直播室，木色展示枱前配置左右兩個相機機位" loading="lazy" width="1280" height="850"></a>
+        <figcaption><p class="eyebrow">Flagship studio</p><h3>直播室 A · 主直播</h3><p>琺瑯白枱面配暖木同深綠吸音布景，雙機位可切換主持全景及產品近鏡。</p></figcaption>
+      </figure>
+      <figure id="studio-b">
+        <a href="./assets/studio-b.jpg" aria-label="開啟直播室 B 大圖"><img src="./assets/studio-b.jpg" alt="藍灰背景產品直播室，白色展示枱設固定俯拍機位" loading="lazy" width="1280" height="850"></a>
+        <figcaption><p class="eyebrow">Tabletop studio</p><h3>直播室 B · 產品特寫</h3><p>俯拍支架配可換布景，方便做開箱、示範同小件產品拍攝。</p></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="workflow" class="closing">
+    <div class="shell">
+      <div class="section-head"><div><p class="eyebrow">營運安排</p><h2>三條動線</h2></div></div>
+      <div class="workflow-grid">
+        <article><h3>訪客及品牌</h3><p>升降機大堂 → 接待 → 會客及會議室。老闆房喺同一側，方便加入會議。</p></article>
+        <article><h3>直播團隊</h3><p>選品及樣品陳列 → 主播準備 → 開播 → 導播及剪片。兩間直播室集中喺東面。</p></article>
+        <article><h3>包裝及備貨</h3><p>樣品及器材倉 → 覆核 → 包裝 → 待出貨。提案將推車活動集中東南側。</p></article>
+      </div>
+      <p class="note">本方案按相中圖則製作。外牆、柱位及升降機樓梯核心按可辨認線條描繪；租區界線、主入口、貨𨋢、實際尺寸、供排水、消防及隔音須在深化前核實。</p>
+    </div>
+  </section>
+</main>
+<footer class="shell"><span>Studio / Office</span><a href="#top">返回頂部</a></footer>
+</body>
+</html>
