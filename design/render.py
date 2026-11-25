@@ -9,11 +9,11 @@ assets = root / "assets"
 scale = layout["metresPerUnit"]
 rooms = {r["id"]: r for r in layout["rooms"]}
 colours = {
-    "frame":"313a41","cream":"e7e0d4","white":"faf6ef","wood":"a77c50",
-    "oak":"c79e70","green":"4d6965","rust":"9c563e","blue":"4d596b",
-    "core":"59636b","steel":"28313c","carpet":"b4b6b1","sand":"c4ac8c",
-    "floor":"c9c5bb","ink":"171e27","glass":"abbebf","warm":"ffddb0",
-    "sage":"91aaa1","cases":"95764e","screen":"2a5576"
+    "frame":"37332e","cream":"b5a995","white":"f1e9dc","wood":"795437",
+    "oak":"a27a55","green":"7f6e56","rust":"a37858","blue":"625849",
+    "core":"8a8174","steel":"2b2927","carpet":"aca193","sand":"caba9f",
+    "floor":"827569","ink":"312c27","glass":"b5c2c4","warm":"ffd6a1",
+    "sage":"9c9d87","cases":"947653","screen":"2e4548","bronze":"524039"
 }
 
 def rgb(h):
@@ -28,6 +28,21 @@ def mat(key):
     p.inputs["Base Color"].default_value=(*color,1)
     p.inputs["Roughness"].default_value=.48 if key in ("steel","glass","screen") else .72
     if key=="steel": p.inputs["Metallic"].default_value=.32
+    if key=="bronze":
+        p.inputs["Metallic"].default_value=.55
+        p.inputs["Roughness"].default_value=.31
+    if key=="floor":
+        p.inputs["Roughness"].default_value=.25
+        nodes=m.node_tree.nodes;links=m.node_tree.links
+        veins=nodes.new("ShaderNodeTexNoise")
+        veins.inputs["Scale"].default_value=33
+        veins.inputs["Detail"].default_value=4.2
+        ramp=nodes.new("ShaderNodeValToRGB")
+        ramp.color_ramp.elements[0].position=.25
+        ramp.color_ramp.elements[0].color=(*rgb("5d5147"),1)
+        ramp.color_ramp.elements[1].position=.77
+        ramp.color_ramp.elements[1].color=(*rgb("ad9d8e"),1)
+        links.new(veins.outputs["Fac"],ramp.inputs[0]);links.new(ramp.outputs[0],p.inputs["Base Color"])
     if key in ("warm","screen"):
         p.inputs["Emission Color"].default_value=(*color,1)
         p.inputs["Emission Strength"].default_value=3 if key=="warm" else .45
@@ -252,15 +267,15 @@ def axon():
         for j in range(rows):
             for i in range(n):furnish_desk(x+(i-(n-1)/2)*1.73,y+(j-(rows-1)/2)*1.86,1.53,direction=1 if j%2==0 else -1)
     x,y,w,d=bounds(rooms["owner"]["rect"])
-    furnish_desk(x+.65,y+.8,1.90, .83,-1);sofa(x-.66,y-1.20,2.05,"rust");round_table(x-.66,y-.53,.38,.37)
+    furnish_desk(x+.65,y+.8,1.90, .83,-1);sofa(x-.66,y-1.20,2.05,"rust");round_table(x-.66,y-.53,.38,.37,"floor")
     x,y,w,d=bounds(rooms["meeting"]["rect"])
     box("Boardroom oak tabletop",x,y,.73,3.22,1.22,.07,"oak",.09)
     for dx in (-1.2,1.2):box("Boardroom base",x+dx,y,.03,.14,.76,.70,"steel")
     for j in range(5):
-        for dy in (-1,1):chair(x+(j-2)*.58,y+dy*1.03,-dy,"green")
+        for dy in (-1,1):chair(x+(j-2)*.58,y+dy*1.03,-dy,"rust")
     box("Presentation display",x,y+d/2-.18,.85,2.0,.09,.54,"screen")
     x,y,w,d=bounds(rooms["reception"]["rect"])
-    box("Reception desk",x+1.20,y+.58,0,1.56,.66,.90,"oak",.065);sofa(x-.83,y-.75,2.24);round_table(x-.83,y+.05,.34,.35)
+    box("Reception desk",x+1.20,y+.58,0,1.56,.66,.90,"oak",.065);sofa(x-.83,y-.75,2.24,"rust");round_table(x-.83,y+.05,.34,.35,"floor")
     x,y,w,d=bounds(rooms["pantry"]["rect"])
     box("Pantry counter",x,y-d/2+.40,0,4.72,.69,.91,"oak");box("Stone countertop",x,y-d/2+.4,.91,4.77,.72,.05,"white")
     box("Sink",x+.91,y-d/2+.40,.956,.59,.39,.026,"steel",.05)
@@ -280,7 +295,7 @@ def axon():
                     for ay in (-1,1):box("Packing bench leg",x+ax*1.10,y+dy+ay*.28,.015,.05,.05,.835,"steel")
                 box("Packing mat",x+.52,y+dy,.922,.79,.47,.015,"sage")
                 box("Carton ready to pack",x-.59,y+dy,.92,.43,.35,.24,"cases")
-        if k=="green": furnish_desk(x,y-.35,1.63);sofa(x-1.40,y-1.21,1.50,"rust")
+        if k=="green": furnish_desk(x+.55,y+.23,1.63,direction=-1);sofa(x-1.40,y-.83,1.50,"rust")
         if k=="prep": box("Product inspection island",x,y-.27,.05,2.64,.83,.85,"oak",.06)
         if k=="stock":
             for dx in (-w*.31,0,w*.31):shelf(x+dx,y-d*.32,w*.26,.46,4)

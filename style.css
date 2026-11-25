@@ -1,4 +1,4 @@
-:root{color-scheme:light;--ink:#182622;--muted:#50615a;--paper:#f8f7f1;--line:#d9ded4;--forest:#17362c;--guest:#efdac3;--work:#dbe8dd;--studio:#d5e0ec;--logistics:#eedfbb;--core:#505e62}
+:root{color-scheme:light;--ink:#27211d;--muted:#564a41;--paper:#f9f7f1;--line:#ded6ca;--forest:#493327;--guest:#efdac3;--work:#dbe8dd;--studio:#d5e0ec;--logistics:#eedfbb;--core:#505e62}
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 "Avenir Next","PingFang HK","Noto Sans TC",system-ui,sans-serif}
@@ -74,3 +74,10 @@ footer{display:flex;justify-content:space-between;gap:15px;padding-block:26px;co
 @media(max-width:920px){.shell{width:calc(100% - 48px)}.hero{grid-template-columns:.85fr 1.15fr}.plan-layout{grid-template-columns:minmax(0,1.4fr) minmax(235px,1fr)}.hero-copy>p:not(.eyebrow){margin:18px 0}.plan-section,.closing,.studios{padding-block:51px}}
 @media(max-width:660px){.shell{width:calc(100% - 30px)}.bar{min-height:56px}.brand,.bar nav{font-size:.82rem}.brand-mark{width:14px;height:14px}.bar nav{gap:10px}.bar nav a:last-child{display:none}.hero{display:block;padding-block:13px 34px}.hero-copy{padding-block:17px 23px}.hero h1 br{display:none}.hero h1{font-size:clamp(2.85rem,10.3vw,4.85rem)}.section-head{display:block;margin-bottom:19px}.section-head>p{margin-top:9px}.plan-layout,.render-grid,.workflow-grid{grid-template-columns:1fr}.drawing{padding:10px}.drawing-head{font-size:.78rem}.plan-tools{padding:17px}.plan-label{font-size:32px}.core-label{font-size:26px}.plan-section,.closing,.studios{padding-block:36px}.render-grid{gap:14px}.workflow-grid{gap:14px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+.hero-actions{display:flex;align-items:center;flex-wrap:wrap;gap:11px 20px}.text-button{font-weight:650}.hero-view>a{display:block}#room-info a{margin-right:16px}
+@media(max-width:410px){.bar nav a[href="#studios"]{display:none}}
+.arrival{padding-block:68px 12px}
+.arrival-view{position:relative;border-radius:8px;overflow:hidden;background:#d2c7b6}
+.arrival-view img{width:100%;max-height:68vh;object-fit:cover;object-position:center 50%}
+.arrival-view figcaption{position:absolute;right:14px;bottom:14px;padding:7px 12px;background:#faf5eaee;border-radius:4px}
+@media(max-width:660px){.arrival{padding-block:36px 5px}.arrival-view img{max-height:none}.arrival-view figcaption{position:static}}

@@ -1,0 +1,33 @@
+:root{font:16px/1.45 "Avenir Next","PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:#f8fbf8;background:#172621;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;overflow:hidden}
+.viewer{position:relative;height:100vh;height:100dvh;overflow:hidden;background:#344740 url("./assets/axon.jpg") center/cover}
+#view{display:block;width:100%;height:100%;touch-action:none;outline:none;cursor:grab}
+#view:active{cursor:grabbing}
+a{color:inherit;text-decoration:none}
+button,select{font:inherit;color:inherit}
+.toolbar{position:absolute;top:0;left:0;right:0;padding:max(15px,env(safe-area-inset-top)) max(16px,env(safe-area-inset-right)) 12px max(16px,env(safe-area-inset-left));display:flex;align-items:center;justify-content:space-between;gap:8px;pointer-events:none}
+.toolbar>*{pointer-events:auto}
+.tools{display:flex;gap:7px;align-items:center}
+.toolbar a,button,.destination{padding:8px 12px;background:#172823f0;border:1px solid #a9c1b357;border-radius:5px}
+button{cursor:pointer}
+button[aria-pressed=true],button[aria-expanded=true]{background:#e2ece4;color:#172823}
+button:disabled,select:disabled{opacity:.5;cursor:default}
+.destination{display:flex;align-items:center;gap:6px;padding:6px 10px;white-space:nowrap}
+.destination span{font-size:.82rem;color:#c7d6cd}
+select{max-width:11rem;background:#172823;border:0;font-weight:650}
+.location,.help,.estimate,.map-panel{background:#172823eb;border:1px solid #a9c1b34a}
+.location{position:absolute;top:max(67px,calc(env(safe-area-inset-top) + 55px));left:16px;border-radius:4px;padding:7px 11px;font-weight:650;pointer-events:none}
+.help,.estimate{position:absolute;bottom:max(12px,env(safe-area-inset-bottom));margin:0;border-radius:4px;padding:7px 10px;font-size:.84rem;pointer-events:none}
+.help{left:16px}.estimate{right:16px;color:#dce6dd}
+.map-panel{position:absolute;right:16px;top:max(67px,calc(env(safe-area-inset-top) + 55px));padding:9px 11px;width:225px;border-radius:6px}
+.map-panel svg{width:100%;height:auto;display:block;touch-action:manipulation;cursor:crosshair}
+.map-heading{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.83rem}.map-heading span{opacity:.8;font-size:.75rem}
+.viewport-status{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:12px;text-align:center;background:#102b21d9;padding:24px}
+.viewport-status strong{font-size:1.45rem}.viewport-status a{text-decoration:underline}.viewport-status span{color:#e1ebe2}
+body[data-state=ready] .viewport-status{display:none}
+body[data-state]:not([data-state=ready]) .location,body[data-state]:not([data-state=ready]) .help{display:none}
+.joystick{position:absolute;transform:translate(-50%,-50%);pointer-events:none;width:94px;height:94px;border:1px solid #e7f5ead0;border-radius:50%;background:#122c226b}
+.joystick div{position:absolute;left:32px;top:32px;width:28px;height:28px;border-radius:50%;background:#e8f3eaf0}
+:focus-visible{outline:2px solid #efe2af;outline-offset:2px}
+@media(max-width:600px){.toolbar{font-size:.86rem}.toolbar a,button,.destination{padding:7px 8px}.toolbar,.tools{gap:4px}.destination span{display:none}select{max-width:106px}.help,.estimate{font-size:.73rem;padding:5px 7px}.help{left:8px}.estimate{right:8px;bottom:max(42px,calc(env(safe-area-inset-bottom) + 30px))}.map-panel{width:min(205px,56vw);right:9px}.location{left:9px}}

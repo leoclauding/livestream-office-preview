@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14241f">
+<title>3D 漫游 · 直播电商办公室</title>
+<link rel="stylesheet" href="./walk.css">
+<script type="module" src="./assets/walk.js"></script>
+</head>
+<body data-state="loading">
+<main class="viewer">
+  <canvas id="view" tabindex="0" aria-label="第一人称办公室漫游"></canvas>
+  <div class="viewport-status" id="status" role="status">
+    <strong>正在加载 3D 办公室</strong>
+    <span>模型加载后即可漫游</span>
+    <a href="./index.html#plan">返回平面图</a>
+  </div>
+  <header class="toolbar">
+    <a href="./index.html" class="back">返回方案</a>
+    <div class="tools">
+      <label class="destination"><span>前往空间</span><select id="destination" disabled aria-label="前往空间"><option value="arrival">接待走廊</option><option value="lobby">电梯厅</option></select></label>
+      <button id="view-toggle" disabled aria-pressed="false">楼层鸟瞰</button>
+      <button id="map-toggle" disabled aria-expanded="false" aria-controls="map-panel">地图</button>
+    </div>
+  </header>
+  <div class="location" id="location" aria-live="polite">电梯厅</div>
+  <aside id="map-panel" class="map-panel" hidden aria-label="楼层小地图">
+    <div class="map-heading"><strong>楼层地图</strong><span>点击可到达位置</span></div>
+    <div id="minimap"></div>
+  </aside>
+  <div id="joystick" class="joystick" hidden aria-hidden="true"><div></div></div>
+  <p class="help" id="help">WASD 移动 · 拖动鼠标转向</p>
+  <p class="estimate">概念模型 · 现场尺寸待核实</p>
+</main>
+</body>
+</html>

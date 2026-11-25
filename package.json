@@ -1,0 +1,8 @@
+{
+  "name": "livestream-office-preview",
+  "private": true,
+  "type": "module",
+  "scripts": {"build": "node design/bundle-walk.mjs"},
+  "dependencies": {"three": "0.186.1"},
+  "devDependencies": {"rolldown": "1.2.13"}
+}

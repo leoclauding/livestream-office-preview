@@ -1,9 +1,9 @@
 const svgns = "http://www.w3.org/2000/svg";
 const colours = { guest: "#efdac3", work: "#dbe8dd", studio: "#d5e0ec", logistics: "#eedfbb" };
 const routeNotes = {
-  guest: ["#94572f", "建議由核心大堂向西行去接待及會客室。"],
-  studio: ["#375d96", "樣品由北面準備區經東側走廊送入直播室，導播室設喺同一段走廊。"],
-  logistics: ["#705024", "東南倉儲與包裝區互通。實際收貨及出貨口要確認物管安排。"]
+  guest: ["#94572f", "从电梯厅进入接待区，再前往会客会议室。"],
+  studio: ["#375d96", "样品从准备区经同侧走廊送入直播间，导播与剪辑区也设在这段走廊。"],
+  logistics: ["#705024", "仓储与包装区相邻。收货及发货口按物业安排确认。"]
 };
 const openRooms = new Set(["desks", "content"]);
 const numberOfRooms = document.querySelector("#room-select");
@@ -38,7 +38,7 @@ function proposedDoor(door) {
 }
 
 function start(layout) {
-  const svg = svgElement("svg",{viewBox:"20 17 1200 1300",role:"group","aria-label":"直播電商辦公室分區及動線"});
+  const svg = svgElement("svg",{viewBox:"20 17 1200 1300",role:"group","aria-label":"直播电商办公室分区及动线"});
   svg.append(rect(layout.frame,{fill:"#efeee7",stroke:"#465550","stroke-width":5,rx:3}));
   const glass = {stroke:"#9baaa1","stroke-width":2,"stroke-dasharray":"28 4"};
   svg.append(rect([79,74,1165,1260],{fill:"none",...glass}));
@@ -91,8 +91,8 @@ function start(layout) {
     const [x,y,x2,y2]=room.rect;
     labels.append(svgElement("text",{class:"plan-label",x:(x+x2)/2,y:(y+y2)/2+9},room.name));
   }
-  labels.append(svgElement("text",{class:"core-label",x:624,y:553},"升降機大堂"));
-  labels.append(svgElement("text",{class:"core-label",x:633,y:1018},"南側通道"));
+  labels.append(svgElement("text",{class:"core-label",x:624,y:553},"电梯厅"));
+  labels.append(svgElement("text",{class:"core-label",x:633,y:1018},"南侧通道"));
   svg.append(labels);
   document.querySelector("#floorplan").replaceChildren(svg);
 
@@ -105,6 +105,7 @@ function start(layout) {
     document.querySelector("#room-en").textContent=room.en;
     document.querySelector("#room-name").textContent=room.name;
     document.querySelector("#room-detail").textContent=room.detail;
+    document.querySelector("#room-walk").href=`./walk.html#room=${room.id}`;
     const renderLink=document.querySelector("#room-render");
     renderLink.hidden=!room.render;
     if (room.render) renderLink.href=`#${room.render}`;
@@ -136,7 +137,7 @@ try {
   if (!response.ok) throw new Error(`Floor plan HTTP ${response.status}`);
   start(await response.json());
 } catch (error) {
-  mount.textContent="暫時載入唔到平面圖，請重新整理。";
+  mount.textContent="暂时无法加载平面图，请刷新页面。";
   numberOfRooms.disabled=true;
   console.error(error);
 }
