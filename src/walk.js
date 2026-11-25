@@ -84,8 +84,8 @@ async function start() {
   try {
     loaded=await Promise.all([
       checkedJSON(new URL("../design/layout.json",assetRoot)),
-      checkedJSON(new URL("walk-colliders.json",assetRoot)),
-      new GLTFLoader().loadAsync(new URL("office-walk.glb?v=material-finish",assetRoot).href),
+      checkedJSON(new URL("walk-colliders.json?v=owner-lounge",assetRoot)),
+      new GLTFLoader().loadAsync(new URL("office-walk.glb?v=owner-lounge",assetRoot).href),
       surfaces
     ]);
   } catch(error) {

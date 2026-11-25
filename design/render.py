@@ -100,11 +100,12 @@ def shelf(x,y,w,depth=.48,levels=4,height=1.9):
             box("Inventory box",bx,y,z+.045,w*.22,depth*.75,.19+.035*(j%2),["cases","cream","sage"][j])
             box("Stock label",bx,y-depth*.38,z+.10,w*.10,.009,.05,"white",0)
 
-def sofa(x,y,w=2.5,colour="green"):
+def sofa(x,y,w=2.5,colour="green",facing=-1):
+    """A positive facing opens toward +Y in the Blender floor plan."""
     box("Sofa base",x,y,.13,w,.83,.31,colour,.085)
-    box("Sofa back",x,y+.33,.38,w,.20,.53,colour,.075)
+    box("Sofa back",x,y-facing*.33,.38,w,.20,.53,colour,.075)
     for dx in (-1,1):box("Sofa arm",x+dx*(w/2-.1),y,.38,.20,.79,.25,colour,.055)
-    for dx in (-1,0,1):box("Sofa cushion",x+dx*(w-.40)/3,y-.04,.43,(w-.46)/3,.65,.14,colour,.06)
+    for dx in (-1,0,1):box("Sofa cushion",x+dx*(w-.40)/3,y+facing*.04,.43,(w-.46)/3,.65,.14,colour,.06)
 
 def round_table(x,y,r=.46,h=.71,colour="oak"):
     rod("Table pedestal",(x,y,.025),(x,y,h),.065)
@@ -261,7 +262,9 @@ def axon():
         for j in range(rows):
             for i in range(n):furnish_desk(x+(i-(n-1)/2)*1.73,y+(j-(rows-1)/2)*1.86,1.53,direction=1 if j%2==0 else -1)
     x,y,w,d=bounds(rooms["owner"]["rect"])
-    furnish_desk(x+.65,y+.8,1.90, .83,-1);sofa(x-.66,y-1.20,2.05,"rust");round_table(x-.66,y-.53,.38,.37,"floor")
+    furnish_desk(x+.65,y+.8,1.90,.83,-1)
+    sofa(x-.66,y-1.20,2.05,"rust",facing=1)
+    round_table(x-.66,y-.03,.38,.37,"floor")
     x,y,w,d=bounds(rooms["meeting"]["rect"])
     box("Boardroom oak tabletop",x,y,.73,3.22,1.22,.07,"oak",.09)
     for dx in (-1.2,1.2):box("Boardroom base",x+dx,y,.03,.14,.76,.70,"steel")
