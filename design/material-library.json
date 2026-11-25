@@ -1,0 +1,5 @@
+{
+  "walnut": {"keys":["wood","oak"],"metres":[1.08,2.28],"roughness":[0.23,0.44],"normal":0.24,"tint":"#f0e3d3","coat":0.18},
+  "stone": {"keys":["floor"],"metres":[3.6,3.6],"roughness":[0.14,0.30],"normal":0.25,"tint":"#d3c9bf","coat":0.36},
+  "leather": {"keys":["rust"],"metres":[0.55,0.55],"roughness":[0.36,0.65],"normal":0.42,"tint":"#ffe4c7","coat":0.08}
+}

@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import {OrbitControls} from "three/addons/controls/OrbitControls.js";
 import {GLTFLoader} from "three/addons/loaders/GLTFLoader.js";
-import {RoomEnvironment} from "three/addons/environments/RoomEnvironment.js";
+import {loadSurfaceSet,makeCorridorReflection,setSurface} from "./walk-surfaces.js";
 import {WalkControls, isFree} from "./walk-controls.js";
 import {collidersFromBounds, lobby, planToWorld, radius, reachableCells, roomView, worldToPlan} from "./walk-geometry.js";
 
@@ -39,39 +39,17 @@ function makeMap(layout, onPick) {
   return (px,py,yaw) => pointer.setAttribute("transform",`translate(${px.toFixed(2)},${py.toFixed(2)}) rotate(${-yaw*180/Math.PI})`);
 }
 
-function addCity(scene) {
-  const geometry=new THREE.BoxGeometry();
-  const material=new THREE.MeshLambertMaterial();
-  const count=128;
-  const city=new THREE.InstancedMesh(geometry,material,count);
-  const matrix=new THREE.Matrix4(),position=new THREE.Vector3(),size=new THREE.Vector3();
-  const rotation=new THREE.Quaternion(),colour=new THREE.Color();
-  let seed=837;
-  const next=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
-  for(let i=0;i<count;i++) {
-    const angle=i/count*Math.PI*2+(next()-.5)*.07;
-    const distance=27+next()*49;
-    const h=4+next()*27;
-    position.set(Math.cos(angle)*distance,h/2-16,Math.sin(angle)*distance);
-    size.set(2.1+next()*4,h,2.2+next()*4.2);
-    matrix.compose(position,rotation,size);
-    city.setMatrixAt(i,matrix);
-    city.setColorAt(i,colour.setHSL(.56+next()*.05,.10+next()*.11,.51+next()*.21));
-  }
-  scene.add(city);
-  return city;
-}
-
 function addLighting(scene) {
-  scene.add(new THREE.HemisphereLight("#e6efff","#b29c82",1.27));
-  const sun=new THREE.DirectionalLight("#fff4e0",2.20);
-  sun.position.set(-22,11,12);
+  scene.add(new THREE.HemisphereLight("#d9e8ff","#a28971",.97));
+  const sun=new THREE.DirectionalLight("#fff2dd",1.58);
+  sun.position.set(-22,7,11);
   sun.castShadow=true;
   sun.shadow.mapSize.set(mobile?1024:2048,mobile?1024:2048);
   Object.assign(sun.shadow.camera,{left:-21,right:21,top:20,bottom:-20,near:.6,far:75});
   sun.shadow.camera.updateProjectionMatrix();
   sun.shadow.bias=-.00035;
   sun.shadow.normalBias=.023;
+  sun.shadow.radius=mobile?2:3;
   scene.add(sun,sun.target);
   for(const [x,z,colour,power] of [[-8,-9,"#fff1dc",19],[-8,5,"#fff1dc",19],[8,6,"#fff5e7",21],[9.8,-11.6,"#fff1e1",29],[9.8,-6.15,"#def0ff",26],[0,10,"#fff1e1",18]]) {
     const light=new THREE.PointLight(colour,power,9,2);
@@ -81,33 +59,6 @@ function addLighting(scene) {
   for(const z of [-8.7,-5.3,-2.4]){
     const lamp=new THREE.PointLight("#ffd4a4",10,5.5,2);lamp.position.set(-5.95,2.79,z);scene.add(lamp);
   }
-}
-
-function stoneTileTexture(){
-  const canvas=document.createElement("canvas");
-  canvas.width=canvas.height=768;
-  const ctx=canvas.getContext("2d"),n=canvas.width,map=ctx.createImageData(n,n);
-  const hash=(x,y)=>(((Math.imul(x+17,374761393)^Math.imul(y+47,668265263))>>>0)%4093)/4093;
-  const noise=(x,y)=>{
-    const a=Math.floor(x),b=Math.floor(y),u=x-a,v=y-b;
-    const s=u*u*(3-2*u),t=v*v*(3-2*v);
-    return THREE.MathUtils.lerp(THREE.MathUtils.lerp(hash(a,b),hash(a+1,b),s),THREE.MathUtils.lerp(hash(a,b+1),hash(a+1,b+1),s),t);
-  };
-  const tiles=16;
-  for(let y=0;y<n;y++)for(let x=0;x<n;x++){
-    const u=x/n,v=y/n;
-    const grout=(u*tiles)%1<.025||(v*tiles)%1<.025;
-    const cloud=noise(u*39,v*32)*.64+noise(u*98,v*142)*.36;
-    const seam=Math.pow(.5+.5*Math.sin(167*u-213*v+cloud*11),14);
-    const variation=hash(Math.floor(u*tiles),Math.floor(v*tiles));
-    const tone=grout?-8:(cloud-.5)*35+seam*13+(variation-.5)*17+(hash(x,y)-.5)*4;
-    const i=4*(y*n+x);
-    map.data.set([129+tone,117+tone,104+tone,255],i);
-  }
-  ctx.putImageData(map,0,0);
-  const tex=new THREE.CanvasTexture(canvas);
-  tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=4;
-  return tex;
 }
 
 async function checkedJSON(url) {
@@ -129,17 +80,19 @@ async function start() {
   renderer.shadowMap.type=THREE.PCFShadowMap;
   renderer.shadowMap.autoUpdate=false;
   let loaded;
+  const surfaces=checkedJSON(new URL("../design/material-library.json",assetRoot)).then(spec=>loadSurfaceSet(spec,assetRoot,renderer,mobile));
   try {
     loaded=await Promise.all([
       checkedJSON(new URL("../design/layout.json",assetRoot)),
       checkedJSON(new URL("walk-colliders.json",assetRoot)),
-      new GLTFLoader().loadAsync(new URL("office-walk.glb",assetRoot).href)
+      new GLTFLoader().loadAsync(new URL("office-walk.glb?v=material-finish",assetRoot).href),
+      surfaces
     ]);
   } catch(error) {
     renderer.dispose();
     throw error;
   }
-  const [layout,bounds,gltf]=loaded;
+  const [layout,bounds,gltf,{sky,byKey}]=loaded;
   const scale=layout.metresPerUnit;
   const colliders=collidersFromBounds(bounds),walkable=reachableCells(layout,colliders);
   const scenes=new Map(layout.rooms.map(room=>[room.id,roomView(room,walkable,scale)]));
@@ -148,26 +101,31 @@ async function start() {
   const scene=new THREE.Scene();
   scene.background=new THREE.Color("#c2d4e4");
   scene.fog=new THREE.FogExp2("#c2d4e4",.014);
-  const pmrem=new THREE.PMREMGenerator(renderer);
-  const env=new RoomEnvironment();
-  const environment=pmrem.fromScene(env,.045);
-  scene.environment=environment.texture;
-  scene.environmentIntensity=.25;
-  env.dispose();pmrem.dispose();
-  const city=addCity(scene);
+  scene.environment=sky;
+  scene.environmentIntensity=.52;
+  scene.environmentRotation.y=.94+Math.PI;
+  scene.backgroundRotation.y=.94+Math.PI;
+  scene.backgroundIntensity=.82;
+  scene.backgroundBlurriness=.018;
+  const reflection=renderer.extensions.has("EXT_color_buffer_float")?makeCorridorReflection(mobile):null;
+  if(reflection)scene.add(reflection);
   addLighting(scene);
   scene.add(gltf.scene);
   const roof=[],glass=[];
-  const stone=stoneTileTexture();
+  const setMaterials=new Set();
+  document.body.dataset.finish="scanned";
   gltf.scene.traverse(mesh=>{
     if (!mesh.isMesh) return;
     mesh.receiveShadow=true;
     mesh.castShadow=true;
-    if(mesh.name.startsWith("Roof_")) roof.push(mesh);
-    if(mesh.material.name==="floor"){
-      mesh.material.color.set("#ffffff");
-      mesh.material.map=stone;mesh.material.roughness=.28;
-      mesh.material.envMapIntensity=.68;
+    if(mesh.name.startsWith("Roof_")) {
+      roof.push(mesh);
+      mesh.castShadow=false;
+    }
+    const maps=byKey.get(mesh.material.name);
+    if(maps&&!setMaterials.has(mesh.material)){
+      setSurface(mesh.material,maps);
+      setMaterials.add(mesh.material);
     }
     if(mesh.name.startsWith("Glazing_")||mesh.name.startsWith("FitoutGlass_")){
       const inside=mesh.name.startsWith("FitoutGlass_");
@@ -175,8 +133,8 @@ async function start() {
       mesh.material=mesh.material.clone();
       mesh.material.color.set(inside?"#c6ab8f":"#8faaba");
       mesh.material.transparent=true;
-      mesh.material.opacity=inside?.20:.085;
-      mesh.material.roughness=.12;mesh.material.envMapIntensity=.65;
+      mesh.material.opacity=inside?.155:.065;
+      mesh.material.roughness=.085;mesh.material.envMapIntensity=.80;
       mesh.material.depthWrite=false;
       mesh.material.side=THREE.DoubleSide;
       mesh.castShadow=false;
@@ -233,8 +191,7 @@ async function start() {
       walker.stick=null;walker.look=null;walker.showStick();
     }
     for(const mesh of [...roof,...glass])mesh.visible=!next;
-    city.visible=!next;
-    scene.background.set(next?"#d6ded5":"#c2d4e4");
+    scene.background=next?new THREE.Color("#d6ded5"):sky;
     scene.fog.density=next?0:.014;
     $("view-toggle").textContent=next?"继续漫游":"楼层鸟瞰";
     $("view-toggle").setAttribute("aria-pressed",String(next));
@@ -289,6 +246,7 @@ async function start() {
       if(stamp!==renderedCamera){dirty=true;renderedCamera=stamp;syncLocation();}
     }
     if(dirty){
+      if(reflection)reflection.visible=!overview&&walker.x<-3.8&&walker.z<.7;
       renderer.render(scene,overview?overviewCamera:walkCamera);
       dirty=false;
     }

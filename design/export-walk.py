@@ -11,6 +11,7 @@ source = root / "design/render.py"
 namespace = {"__file__": str(source)}
 exec(compile(source.read_text().split("\nargs=sys.argv", 1)[0], str(source), "exec"), namespace)
 globals().update({key: namespace[key] for key in ("axon", "box", "panel", "rod", "rooms", "layout", "scale", "xy", "bounds", "plan_boxes", "light", "camera", "mat")})
+from surfaces import strip_for_glb
 
 scene = axon()
 ceiling = 3.30
@@ -56,7 +57,7 @@ for obj in list(scene.objects):
 plan_boxes("Walk ceiling", layout["frame"], ceiling, .12, "e7e3da")
 for v in (165, 348, 532, 716, 900, 1084):
     panel("Walk beam", xy(77,v), xy(1169,v), 2.97, .32, .49, "c7c1b5")
-for offset, material, diameter in ((0,"steel",.028),(9,"rust",.018),(19,"glass",.034)):
+for offset, material, diameter in ((0,"steel",.028),(9,"9c6752",.018),(19,"glass",.034)):
     for u in (399,858):
         a,b=xy(u+offset,83),xy(u+offset,1253)
         rod("Walk services pipe",(*a,2.92),(*b,2.92),diameter,material)
@@ -80,6 +81,36 @@ for k in ("owner","meeting","reception"):
         xx=x+w*.20+(i-2)*.30
         box("Walnut wall return",xx,y-d/2+.079,.04,.288,.047,2.98,"wood",.004)
     box("Wall return cove",x+w*.20,y-d/2+.135,2.986,1.48,.038,.022,"warm")
+
+def vase_with_branches(x,y,z):
+    rod("Stoneware vase foot",(x,y,z),(x,y,z+.035),.087,"bcb1a1",32)
+    rod("Stoneware vase body",(x,y,z+.035),(x,y,z+.22),.103,"d8c9b6",32)
+    rod("Stoneware vase neck",(x,y,z+.20),(x,y,z+.28),.046,"d8c9b6",32)
+    for i in range(11):
+        a=i*2.399963
+        height=.35+(i%4)*.071
+        tip=(x+math.cos(a)*(.15+(i%3)*.07),y+math.sin(a)*(.15+(i%3)*.07),z+height)
+        rod("Branch",(x,y,z+.18),tip,.004,"514b37",6)
+        for j in range(2):
+            along=.73+j*.22
+            centre=(x+(tip[0]-x)*along,y+(tip[1]-y)*along,z+.20+(height-.20)*along)
+            leaf=box("Eucalyptus leaf",*centre,.039,.094,.010,("607160","718678")[j],.013)
+            leaf.rotation_euler=(.4,.32,a+j*.8)
+
+x,y,w,d=bounds(rooms["meeting"]["rect"])
+box("Meeting rug",x,y,.014,4.58,3.30,.013,"sand",.015)
+rod("Pendant cable",(x,y,2.57),(x,y,3.055),.015,"bronze")
+box("Pendant satin housing",x,y,2.49,2.70,.102,.065,"bronze",.018)
+box("Pendant diffuser",x,y,2.475,2.58,.045,.016,"warm",.005)
+vase_with_branches(x-.68,y-.18,.80)
+box("Meeting notebook",x+.62,y-.31,.802,.29,.21,.029,"69574b",.009)
+box("Meeting linen pages",x+.62,y-.31,.805,.279,.205,.019,"f2ede4",.004)
+box("Art timber frame",x+.72,y-d/2+.13,1.22,1.02,.046,.84,"bronze",.01)
+box("Art paper mount",x+.72,y-d/2+.159,1.255,.94,.014,.764,"ded4c4",.003)
+for j,(shade,offset,height) in enumerate([("94765e",-.22,.36),("7a8071",.04,.44),("baa184",.22,.29)]):
+    box("Art print relief",x+.72+offset,y-d/2+.169,1.39+j*.06,.263,.010,height,shade,.004)
+x,y,w,d=bounds(rooms["reception"]["rect"])
+vase_with_branches(x-.83,y+.05,.406)
 
 edge_segments = [(72,67,1172,67),(72,1267,1172,1267),(72,67,72,1267),(1172,67,1172,1267)]
 for u,v,U,V in edge_segments:
@@ -153,19 +184,32 @@ if "--" in sys.argv and "arrival" in sys.argv[sys.argv.index("--")+1:]:
             output=nodes.new("ShaderNodeOutputMaterial")
             links.new(transparent.outputs[0],mix.inputs[1]);links.new(principled.outputs[0],mix.inputs[2]);links.new(mix.outputs[0],output.inputs[0])
             for obj in items:obj.data.materials[0]=clear
+    tree=scene.world.node_tree
+    world_image=tree.nodes.new("ShaderNodeTexEnvironment")
+    world_image.image=bpy.data.images.load(str(root/"assets/materials/rooftop.hdr"),check_existing=True)
+    tree.links.new(world_image.outputs["Color"],tree.nodes.get("Background").inputs[0])
+    tree.nodes.get("Background").inputs[1].default_value=.58
     for side in ("owner","meeting","reception"):
         x,y,w,d=bounds(rooms[side]["rect"])
-        light("Diffuse window light",(x-w/2+.32,y,2.38),(x+.70,y,1.1),150,2.15,(.8,.89,1))
-        light("Interior warm fill",(x,y,2.92),(x,y,.6),99,2.2,(1,.79,.61))
+        light("Diffuse window light",(x-w/2+.27,y,2.37),(x+.70,y,1.1),137,2.35,(.86,.94,1))
+        light("Interior warm fill",(x,y,2.91),(x,y,.6),96,2.1,(1,.82,.68))
     for v in (305,465,560,675):
         x,y=xy(396,v)
-        light("Warm corridor downlight",(x,y,2.80),(x,y,0),76,1.25,(1,.88,.74))
-    x,y=xy(402,681);u,v=xy(332,407)
-    camera(scene,(x,y,1.63),(u,v,1.44),lens=24)
-    scene.render.resolution_x=1360;scene.render.resolution_y=890
-    scene.cycles.samples=31
-    scene.render.filepath=str(root/"assets/arrival.jpg")
-    bpy.ops.render.render(write_still=True)
+        light("Warm corridor downlight",(x,y,2.80),(x,y,0),50,1.15,(1,.87,.72))
+    scene.cycles.samples=52
+    scene.cycles.adaptive_threshold=.035
+    scene.cycles.max_bounces=10
+    scene.render.resolution_x=1680;scene.render.resolution_y=1098
+    x,y=xy(402,657);u,v=xy(321,389)
+    x_meet,y_meet,w,d=bounds(rooms["meeting"]["rect"])
+    views=[
+        ("arrival",(x,y,1.63),(u,v,1.44),23),
+        ("meeting",(x_meet+w*.43,y_meet-d*.42,1.52),(x_meet-.51,y_meet+.44,1.17),23),
+    ]
+    for name,position,target,lens in views:
+        camera(scene,position,target,lens=lens)
+        scene.render.filepath=str(root/f"assets/{name}.jpg")
+        bpy.ops.render.render(write_still=True)
     for (layer,material),items in groups.items():
         if layer=="Glazing":
             for obj in items:obj.hide_render=False
@@ -185,4 +229,5 @@ for (layer,material),items in groups.items():
     if len(items)>1:bpy.ops.object.join()
     merged.name=f"{layer}_{material}"
 
+strip_for_glb()
 bpy.ops.export_scene.gltf(filepath=str(root/"assets/office-walk.glb"),export_format="GLB",export_yup=True,export_lights=False,export_cameras=False)

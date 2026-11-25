@@ -2,6 +2,8 @@
 import bpy, json, math, pathlib, sys
 from mathutils import Vector
 from functools import lru_cache
+sys.path.insert(0,str(pathlib.Path(__file__).resolve().parent))
+from surfaces import BY_KEY, apply_shader, map_uv
 
 root = pathlib.Path(__file__).resolve().parents[1]
 layout = json.loads((root / "design/layout.json").read_text())
@@ -31,22 +33,12 @@ def mat(key):
     if key=="bronze":
         p.inputs["Metallic"].default_value=.55
         p.inputs["Roughness"].default_value=.31
-    if key=="floor":
-        p.inputs["Roughness"].default_value=.25
-        nodes=m.node_tree.nodes;links=m.node_tree.links
-        veins=nodes.new("ShaderNodeTexNoise")
-        veins.inputs["Scale"].default_value=33
-        veins.inputs["Detail"].default_value=4.2
-        ramp=nodes.new("ShaderNodeValToRGB")
-        ramp.color_ramp.elements[0].position=.25
-        ramp.color_ramp.elements[0].color=(*rgb("5d5147"),1)
-        ramp.color_ramp.elements[1].position=.77
-        ramp.color_ramp.elements[1].color=(*rgb("ad9d8e"),1)
-        links.new(veins.outputs["Fac"],ramp.inputs[0]);links.new(ramp.outputs[0],p.inputs["Base Color"])
     if key in ("warm","screen"):
         p.inputs["Emission Color"].default_value=(*color,1)
         p.inputs["Emission Strength"].default_value=3 if key=="warm" else .45
-    if key in ("wood","oak","floor","carpet","sand","cream"):
+    if key in BY_KEY:
+        apply_shader(m,key,rgb)
+    elif key in ("carpet","sand","cream","blue","green"):
         nodes=m.node_tree.nodes
         noise=nodes.new("ShaderNodeTexNoise");noise.inputs["Scale"].default_value=115
         bump=nodes.new("ShaderNodeBump");bump.inputs["Strength"].default_value=.17;bump.inputs["Distance"].default_value=.018
@@ -59,6 +51,7 @@ def box(name,x,y,z,w,d,h,colour="cream",bevel=.025):
     o=bpy.context.object;o.name=name;o.dimensions=(w,d,h)
     bpy.ops.object.transform_apply(location=False,rotation=False,scale=True)
     o.data.materials.append(mat(colour))
+    if colour in BY_KEY: map_uv(o,colour)
     if bevel:
         b=o.modifiers.new("Soft edges","BEVEL");b.width=min(bevel,h/3,d/3,w/3);b.segments=2
         n=o.modifiers.new("Weighted normals","WEIGHTED_NORMAL")
@@ -70,6 +63,7 @@ def rod(name,a,b,r,colour="steel",verts=12):
     bpy.ops.mesh.primitive_cylinder_add(vertices=verts,radius=r,depth=delta.length,location=(a+b)/2)
     o=bpy.context.object;o.name=name
     o.rotation_euler=delta.to_track_quat("Z","Y").to_euler();o.data.materials.append(mat(colour))
+    if colour in BY_KEY: map_uv(o,colour)
     return o
 
 def panel(name,a,b,z,h,t,colour="cream"):
@@ -232,7 +226,7 @@ def axon():
     scene=setup("axon")
     plan_boxes("Concrete perimeter slab",layout["frame"],-.29,.27,"frame")
     plan_boxes("Open circulation floor",layout["frame"],-.035,.037,"floor")
-    zone_floor={"guest":"sand","work":"carpet","studio":"blue","logistics":"c9b899"}
+    zone_floor={"guest":"floor","work":"carpet","studio":"blue","logistics":"c9b899"}
     open_rooms={"desks","content"}
     walls={}
     for r in rooms.values():
