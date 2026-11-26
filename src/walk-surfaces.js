@@ -6,7 +6,7 @@ export async function loadSurfaceSet(library, root, renderer, mobile) {
   const loader=new THREE.TextureLoader();
   const anisotropy=Math.min(renderer.capabilities.getMaxAnisotropy(),mobile?4:8);
   const texture=async(name,channel)=>{
-    const map=await loader.loadAsync(new URL(`materials/${name}-${channel}.jpg`,root).href);
+    const map=await loader.loadAsync(new URL(`materials/${name}-${channel}.jpg?v=atelier`,root).href);
     map.flipY=false;
     map.colorSpace=channel==="color"?THREE.SRGBColorSpace:THREE.NoColorSpace;
     map.wrapS=map.wrapT=THREE.RepeatWrapping;

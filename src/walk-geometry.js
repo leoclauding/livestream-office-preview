@@ -53,6 +53,11 @@ export function roomView(room, walkable, scale) {
     wanted = [dx+inside[0],dy+inside[1]];
     if (room.id.startsWith("studio")) target = [centre[0],centre[1]-30];
   } else wanted=[x2-25,centre[1]];
+  if (room.id==="reception") {
+    wanted=[246,521]; target=[180,618];
+  } else if (room.id==="green") {
+    wanted=[810,178]; target=[748,156];
+  }
   let closest=null, score=Infinity;
   for (const world of walkable) {
     const [px,py] = worldToPlan(world,scale);

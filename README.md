@@ -26,3 +26,5 @@
 - [Grey Cartago 03](https://polyhaven.com/a/grey_cartago_03)
 - [Brown Leather](https://polyhaven.com/a/brown_leather)
 - [Hotel Rooftop Balcony](https://polyhaven.com/a/hotel_rooftop_balcony)
+
+接待区地面使用调色后的 [Marble 01](https://polyhaven.com/a/marble_01)，地毯与装饰织物使用 [Denim Fabric 05](https://polyhaven.com/a/denim_fabric_05) 的织纹。两套素材均为 CC0。

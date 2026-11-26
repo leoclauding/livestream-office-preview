@@ -15,7 +15,7 @@ from surfaces import strip_for_glb
 
 scene = axon()
 ceiling = 3.30
-roof_prefixes = ("Walk ceiling", "Walk beam", "Walk services")
+roof_prefixes = ("Walk ceiling", "Walk beam", "Walk services", "Aisle downlight", "Trimless downlight", "Recessed lamp")
 fixtures = ("Oak desktop", "Upholstered seat", "Sofa base", "Circular table",
             "Boardroom oak tabletop", "Reception desk", "Pantry counter",
             "Refrigerator", "Rack shelf", "Product inspection island", "Packing bench top",
@@ -57,12 +57,19 @@ for obj in list(scene.objects):
 plan_boxes("Walk ceiling", layout["frame"], ceiling, .12, "e7e3da")
 for v in (165, 348, 532, 716, 900, 1084):
     panel("Walk beam", xy(77,v), xy(1169,v), 2.97, .32, .49, "c7c1b5")
+# Restrict exposed services to production. The guest aisle has a continuous soffit.
+cx,cy,cw,cd=bounds((346,76,445,682))
+box("Walk ceiling gallery",cx,cy,2.87,cw,cd,.20,"white",.009)
+for v in range(103,680,61):
+    lx,ly=xy(396,v)
+    rod("Aisle downlight trim",(lx,ly,2.862),(lx,ly,2.875),.065,"bronze",28)
+    rod("Aisle downlight lens",(lx,ly,2.860),(lx,ly,2.865),.040,"warm",28)
 for offset, material, diameter in ((0,"steel",.028),(9,"9c6752",.018),(19,"glass",.034)):
-    for u in (399,858):
+    for u in (858,):
         a,b=xy(u+offset,83),xy(u+offset,1253)
         rod("Walk services pipe",(*a,2.92),(*b,2.92),diameter,material)
 for y in (117,298,477,656,850,1032,1200):
-    for u in (220,405,858,1050):
+    for u in ((858,1050) if y<680 else (220,405,858,1050)):
         x,z=xy(u,y)
         box("Walk services housing",x,z,2.86,.17,1.08,.075,"frame")
         box("Walk services diffuser",x,z,2.84,.12,1.02,.025,"warm")
@@ -71,21 +78,67 @@ for y in (117,298,477,656,850,1032,1200):
 # character. The live rooms keep blackout linings and acoustic panels.
 for k in ("owner","meeting","reception"):
     x,y,w,d=bounds(rooms[k]["rect"])
+    box("Walnut lining substrate",x-w/2+.13,y,.035,.055,d*.62,2.975,"bronze",.002)
     for i in range(13):
         yy=y-d*.31+(i+.5)*d*.62/13
         box("Walnut feature wall",x-w/2+.18,yy,.04,.12,d*.62/13-.014,2.96,"wood",.003)
     box("Walnut wall wash strip",x-w/2+.28,y,2.956,.035,d*.62,.023,"warm")
     box("Walk ceiling visitor soffit",x,y,3.035,w,d,.18,"white")
-    # Low-sheen walnut returns and recessed warm light are seen from the aisle.
-    for i in range(5):
-        xx=x+w*.20+(i-2)*.30
-        box("Walnut wall return",xx,y-d/2+.079,.04,.288,.047,2.98,"wood",.004)
-    box("Wall return cove",x+w*.20,y-d/2+.135,2.986,1.48,.038,.022,"warm")
+    # Continuous full-height joinery on the solid return, with a recessed plinth.
+    wall_y=y-d/2+.105
+    for i in range(7):
+        xx=x+(i-3)*w/7
+        box("Matched walnut lining",xx,wall_y,.105,w/7-.009,.07,2.85,"wood",.003)
+    box("Bronze skirting",x,wall_y,.024,w,.066,.078,"bronze",.003)
+    box("Shadow gap at crown",x,wall_y,2.96,w,.078,.047,"bronze",.003)
+    box("Concealed wall washer",x,wall_y+.044,2.973,w-.09,.018,.013,"warm",.003)
+    for i in (-1,0,1):
+        px=x+i*w*.30
+        rod("Trimless downlight",(px,y,3.014),(px,y,3.034),.067,"bronze",28)
+        rod("Recessed lamp",(px,y,3.012),(px,y,3.016),.041,"warm",28)
+    if k in ("owner","reception"):
+        sofa_x=x-(.66 if k=="owner" else .83)
+        sofa_y=y-(1.20 if k=="owner" else .75)
+        box("Bound lounge rug",sofa_x,sofa_y+.49,.015,2.64,1.87,.019,"rug",.008)
+        # Triptych in individual frames with relief panels and linen mounts.
+        for i in (-1,0,1):
+            px=sofa_x+i*.53
+            box("Art bronze frame",px,wall_y+.069,1.16,.51,.068,.88,"bronze",.006)
+            box("Art linen mount",px,wall_y+.105,1.18,.475,.009,.84,"linen",.003)
+            # A continuous engraved landscape crosses the three linen panels.
+            # Each sheet has the same margins; the profile continues across the frames.
+            verts=[]; strips=[]
+            for band in range(17):
+                for step in range(25):
+                    t=step/24
+                    u=(i+1+t)/3
+                    z=1.36+band*.019+.095*math.sin(u*6.7+band*.086)+.055*math.sin(u*16-band*.033)
+                    base=len(verts)
+                    verts.extend([(px+(t-.5)*.389,wall_y+.114,z+offset) for offset in (-.0019,.0019)])
+                    if step:strips.append((base-2,base-1,base+1,base))
+            engraving=bpy.data.meshes.new("Contour print")
+            engraving.from_pydata(verts,[],strips);engraving.update()
+            print_obj=bpy.data.objects.new("Contour print",engraving)
+            bpy.context.collection.objects.link(print_obj);engraving.materials.append(mat("69574b"))
+        # Slim picture light washing the three separate panels.
+        box("Gallery light",sofa_x,wall_y+.19,2.21,1.52,.055,.035,"bronze",.012)
+        box("Gallery diffuser",sofa_x,wall_y+.19,2.205,1.44,.036,.009,"warm",.003)
 
 def vase_with_branches(x,y,z):
-    rod("Stoneware vase foot",(x,y,z),(x,y,z+.035),.087,"bcb1a1",32)
-    rod("Stoneware vase body",(x,y,z+.035),(x,y,z+.22),.103,"d8c9b6",32)
-    rod("Stoneware vase neck",(x,y,z+.20),(x,y,z+.28),.046,"d8c9b6",32)
+    profile=[(.062,0),(.091,.019),(.105,.065),(.104,.135),(.088,.19),(.051,.225),(.041,.266),(.045,.278),(.036,.279),(.032,.246)]
+    vertices=[];faces=[]
+    for r,h in profile:
+        for i in range(48):
+            a=i*math.tau/48
+            vertices.append((x+r*math.cos(a),y+r*math.sin(a),z+h))
+    for j in range(len(profile)-1):
+        for i in range(48):
+            a=j*48+i;b=j*48+(i+1)%48
+            faces.append((a,b,b+48,a+48))
+    mesh=bpy.data.meshes.new("Thrown stoneware");mesh.from_pydata(vertices,[],faces);mesh.update()
+    vessel=bpy.data.objects.new("Thrown stoneware",mesh);bpy.context.collection.objects.link(vessel)
+    mesh.materials.append(mat("bcb1a1"))
+    for face in mesh.polygons:face.use_smooth=True
     for i in range(11):
         a=i*2.399963
         height=.35+(i%4)*.071
@@ -94,21 +147,23 @@ def vase_with_branches(x,y,z):
         for j in range(2):
             along=.73+j*.22
             centre=(x+(tip[0]-x)*along,y+(tip[1]-y)*along,z+.20+(height-.20)*along)
-            leaf=box("Eucalyptus leaf",*centre,.039,.094,.010,("607160","718678")[j],.013)
+            bpy.ops.mesh.primitive_uv_sphere_add(segments=10,ring_count=6,location=centre)
+            leaf=bpy.context.object;leaf.name="Eucalyptus leaf"
+            leaf.scale=(.026,.052,.003);leaf.data.materials.append(mat(("607160","718678")[j]))
             leaf.rotation_euler=(.4,.32,a+j*.8)
 
 x,y,w,d=bounds(rooms["meeting"]["rect"])
-box("Meeting rug",x,y,.014,4.58,3.30,.013,"sand",.015)
+box("Meeting rug",x,y,.014,4.58,3.30,.013,"rug",.015)
 rod("Pendant cable",(x,y,2.57),(x,y,3.055),.015,"bronze")
 box("Pendant satin housing",x,y,2.49,2.70,.102,.065,"bronze",.018)
 box("Pendant diffuser",x,y,2.475,2.58,.045,.016,"warm",.005)
 vase_with_branches(x-.68,y-.18,.80)
 box("Meeting notebook",x+.62,y-.31,.802,.29,.21,.029,"69574b",.009)
 box("Meeting linen pages",x+.62,y-.31,.805,.279,.205,.019,"f2ede4",.004)
-box("Art timber frame",x+.72,y-d/2+.13,1.22,1.02,.046,.84,"bronze",.01)
-box("Art paper mount",x+.72,y-d/2+.159,1.255,.94,.014,.764,"ded4c4",.003)
+box("Art timber frame",x+.72,y-d/2+.23,1.22,1.02,.046,.84,"bronze",.01)
+box("Art paper mount",x+.72,y-d/2+.259,1.255,.94,.014,.764,"ded4c4",.003)
 for j,(shade,offset,height) in enumerate([("94765e",-.22,.36),("7a8071",.04,.44),("baa184",.22,.29)]):
-    box("Art print relief",x+.72+offset,y-d/2+.169,1.39+j*.06,.263,.010,height,shade,.004)
+    box("Art print relief",x+.72+offset,y-d/2+.269,1.39+j*.06,.263,.010,height,shade,.004)
 x,y,w,d=bounds(rooms["reception"]["rect"])
 dx,dy=namespace["reception_coffee_table_offset"]
 vase_with_branches(x+dx,y+dy,.406)
@@ -168,7 +223,8 @@ for obj in list(scene.objects):
     material=obj.data.materials[0].name
     groups.setdefault((layer,material),[]).append(obj)
 
-if "--" in sys.argv and "arrival" in sys.argv[sys.argv.index("--")+1:]:
+requested_views=sys.argv[sys.argv.index("--")+1:] if "--" in sys.argv else []
+if "arrival" in requested_views or "meeting" in requested_views:
     # A separate ray-traced camera uses the same room geometry as the preview.
     # Reflections on glass are authored only for this offline view.
     for (layer,_),items in groups.items():
@@ -197,17 +253,22 @@ if "--" in sys.argv and "arrival" in sys.argv[sys.argv.index("--")+1:]:
     for v in (305,465,560,675):
         x,y=xy(396,v)
         light("Warm corridor downlight",(x,y,2.80),(x,y,0),50,1.15,(1,.87,.72))
-    scene.cycles.samples=52
+    # The cove grazes the veneer and artwork instead of flattening the room.
+    for side in ("owner","meeting","reception"):
+        x,y,w,d=bounds(rooms[side]["rect"])
+        light("Joinery wall wash",(x,y-d/2+.58,2.79),(x,y-d/2+.12,1.39),78,2.0,(1,.72,.48))
+    scene.cycles.samples=42
     scene.cycles.adaptive_threshold=.035
     scene.cycles.max_bounces=10
     scene.render.resolution_x=1680;scene.render.resolution_y=1098
-    x,y=xy(402,657);u,v=xy(321,389)
+    x,y=xy(246,521);u,v=xy(180,618)
     x_meet,y_meet,w,d=bounds(rooms["meeting"]["rect"])
     views=[
         ("arrival",(x,y,1.63),(u,v,1.44),23),
         ("meeting",(x_meet+w*.43,y_meet-d*.42,1.52),(x_meet-.51,y_meet+.44,1.17),23),
     ]
     for name,position,target,lens in views:
+        if "arrival" not in requested_views and name not in requested_views:continue
         camera(scene,position,target,lens=lens)
         scene.render.filepath=str(root/f"assets/{name}.jpg")
         bpy.ops.render.render(write_still=True)

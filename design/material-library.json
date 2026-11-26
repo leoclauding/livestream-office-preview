@@ -1,5 +1,8 @@
 {
   "walnut": {"keys":["wood","oak"],"metres":[1.08,2.28],"roughness":[0.23,0.44],"normal":0.24,"tint":"#f0e3d3","coat":0.18},
-  "stone": {"keys":["floor"],"metres":[3.6,3.6],"roughness":[0.14,0.30],"normal":0.25,"tint":"#d3c9bf","coat":0.36},
-  "leather": {"keys":["rust"],"metres":[0.55,0.55],"roughness":[0.36,0.65],"normal":0.42,"tint":"#ffe4c7","coat":0.08}
+  "stone": {"keys":["accentStone"],"metres":[3.6,3.6],"roughness":[0.14,0.3],"normal":0.25,"tint":"#d3c9bf","coat":0.36},
+  "leather": {"keys":["rust"],"metres":[0.55,0.55],"roughness":[0.36,0.65],"normal":0.42,"tint":"#ffe4c7","coat":0.08},
+  "marble": {"keys":["floor"],"metres":[4.8,4.8],"roughness":[0.2,0.39],"normal":0.17,"tint":"#cac7c5","coat":0.24},
+  "weave": {"keys":["linen","carpet","rug"],"metres":[0.28,0.28],"roughness":[0.73,0.94],"normal":0.31,"tint":"#ece1ce","coat":0},
+  "slab": {"keys":["honed"],"metres":[1.65,0.98],"roughness":[0.19,0.37],"normal":0.09,"tint":"#e8d8c4","coat":0.24}
 }

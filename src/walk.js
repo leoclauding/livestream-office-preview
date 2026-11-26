@@ -39,10 +39,41 @@ function makeMap(layout, onPick) {
   return (px,py,yaw) => pointer.setAttribute("transform",`translate(${px.toFixed(2)},${py.toFixed(2)}) rotate(${-yaw*180/Math.PI})`);
 }
 
+// Soft grounding beneath low furniture supplements the hard daylight shadows.
+function furnitureShadows(bounds) {
+  const footprints=bounds.filter(([x,z,X,Z])=>{
+    const width=X-x,depth=Z-z;
+    return width>=.47 && width<=3.3 && depth>=.45 && depth<=1.25;
+  });
+  const canvas=document.createElement("canvas");
+  canvas.width=canvas.height=64;
+  const ctx=canvas.getContext("2d");
+  const pixels=ctx.createImageData(64,64);
+  for(let j=0;j<64;j++)for(let i=0;i<64;i++){
+    const x=Math.abs((i-31.5)/31.5),y=Math.abs((j-31.5)/31.5);
+    const edge=Math.min(1,(1-x)*3.4,(1-y)*3.4);
+    pixels.data[(j*64+i)*4+3]=Math.round(255*edge*edge*(3-2*edge));
+  }
+  ctx.putImageData(pixels,0,0);
+  const material=new THREE.MeshBasicMaterial({
+    map:new THREE.CanvasTexture(canvas),transparent:true,opacity:.19,depthWrite:false
+  });
+  const result=new THREE.InstancedMesh(new THREE.PlaneGeometry(1,1),material,footprints.length);
+  const pose=new THREE.Object3D();
+  pose.rotation.x=-Math.PI/2;
+  footprints.forEach(([x,z,X,Z],i)=>{
+    pose.position.set((x+X)/2,.038,(z+Z)/2);
+    pose.scale.set(X-x+.33,Z-z+.29,1);
+    pose.updateMatrix();result.setMatrixAt(i,pose.matrix);
+  });
+  result.renderOrder=3;
+  return result;
+}
+
 function addLighting(scene) {
   scene.add(new THREE.HemisphereLight("#d9e8ff","#a28971",.97));
   const sun=new THREE.DirectionalLight("#fff2dd",1.58);
-  sun.position.set(-22,7,11);
+  sun.position.set(-22,12,11);
   sun.castShadow=true;
   sun.shadow.mapSize.set(mobile?1024:2048,mobile?1024:2048);
   Object.assign(sun.shadow.camera,{left:-21,right:21,top:20,bottom:-20,near:.6,far:75});
@@ -55,6 +86,13 @@ function addLighting(scene) {
     const light=new THREE.PointLight(colour,power,9,2);
     light.position.set(x,2.72,z);
     scene.add(light);
+  }
+  for (const [u,v] of [[214,244],[214,483],[188,643]]) {
+    const x=(u-622)*.024, z=(v-667)*.024;
+    const wash=new THREE.SpotLight("#ffdbac",13,5,1.16,.94,2);
+    wash.position.set(x,2.83,z-.47);
+    wash.target.position.set(x,1.18,z+.32);
+    scene.add(wash,wash.target);
   }
   for(const z of [-8.7,-5.3,-2.4]){
     const lamp=new THREE.PointLight("#ffd4a4",10,5.5,2);lamp.position.set(-5.95,2.79,z);scene.add(lamp);
@@ -80,12 +118,12 @@ async function start() {
   renderer.shadowMap.type=THREE.PCFShadowMap;
   renderer.shadowMap.autoUpdate=false;
   let loaded;
-  const surfaces=checkedJSON(new URL("../design/material-library.json",assetRoot)).then(spec=>loadSurfaceSet(spec,assetRoot,renderer,mobile));
+  const surfaces=checkedJSON(new URL("../design/material-library.json?v=atelier",assetRoot)).then(spec=>loadSurfaceSet(spec,assetRoot,renderer,mobile));
   try {
     loaded=await Promise.all([
       checkedJSON(new URL("../design/layout.json",assetRoot)),
-      checkedJSON(new URL("walk-colliders.json?v=seating",assetRoot)),
-      new GLTFLoader().loadAsync(new URL("office-walk.glb?v=seating",assetRoot).href),
+      checkedJSON(new URL("walk-colliders.json?v=atelier",assetRoot)),
+      new GLTFLoader().loadAsync(new URL("office-walk.glb?v=atelier",assetRoot).href),
       surfaces
     ]);
   } catch(error) {
@@ -110,7 +148,7 @@ async function start() {
   const reflection=renderer.extensions.has("EXT_color_buffer_float")?makeCorridorReflection(mobile):null;
   if(reflection)scene.add(reflection);
   addLighting(scene);
-  scene.add(gltf.scene);
+  scene.add(gltf.scene,furnitureShadows(bounds));
   const roof=[],glass=[];
   const setMaterials=new Set();
   document.body.dataset.finish="scanned";
